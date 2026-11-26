@@ -376,8 +376,8 @@ export default function App() {
         {
           id: "about",
           label: "About EVTX Viewer",
-          onClick: () =>
-            window.open("https://github.com/omerbenamram/evtx", "_blank", "noopener,noreferrer"),
+          // Offline build: no external navigation.
+          onClick: () => window.alert("EVTX Viewer (offline build). Based on github.com/omerbenamram/evtx"),
         },
       ],
     },

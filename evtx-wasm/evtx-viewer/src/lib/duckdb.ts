@@ -1,5 +1,15 @@
 import type { AsyncDuckDBConnection } from "@duckdb/duckdb-wasm";
 import { z } from "zod";
+import duckdbMvpWasm from "@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url";
+import duckdbMvpWorker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url";
+import duckdbEhWasm from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
+import duckdbEhWorker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url";
+
+const absolute = (u: string) => new URL(u, document.baseURI).href;
+const LOCAL_DUCKDB_BUNDLES = {
+  mvp: { mainModule: absolute(duckdbMvpWasm), mainWorker: absolute(duckdbMvpWorker) },
+  eh: { mainModule: absolute(duckdbEhWasm), mainWorker: absolute(duckdbEhWorker) },
+};
 import {
   parseEvtxRecord,
   tabularRowSchema,
@@ -42,7 +52,8 @@ export function initDuckDB(): Promise<AsyncDuckDBConnection> {
 
 async function openDuckDB(): Promise<AsyncDuckDBConnection> {
   const duckdb = await import("@duckdb/duckdb-wasm");
-  const bundle = await duckdb.selectBundle(duckdb.getJsDelivrBundles());
+  // Offline build: DuckDB bundles are served from this app's own origin (no CDN).
+  const bundle = await duckdb.selectBundle(LOCAL_DUCKDB_BUNDLES);
   const workerUrl = URL.createObjectURL(
     new Blob([`importScripts(${JSON.stringify(bundle.mainWorker)});`], {
       type: "text/javascript",
